@@ -1,0 +1,61 @@
+Project Log
+
+I recently came up with the core idea here, of a 3-dimensional field that appears
+to be mathematically coherent if not necessarily meaningful.  The idea can either
+be regarded as an extension of Dual numbers or a simplification of Surreal Numbers.
+At present I'm calling it Super Simplified Surreal numbers, which sounds better
+than triel numbers.  The fundamental idea is that a S3 number has a finite,
+infinitessimal, and infinite component, so is of the form a + b epsilon + c omega.
+I declare that, as in the dual numbers, epsilon * epsilon is 0.  I also simplify
+the other parts of the multiplication table rather than doing the rigorous
+expansions of the surreal numbers: epsilon * omega = 1, as is omega * epsilon,
+and omega * omega = omega. (Note: This field is not associative under
+multiplcation.  epsilon * omega * omega is either 1 or omega depending on the order
+of the operations)
+
+Having defined a 3-part field, my next idea was to see if, when applied to the
+mandelbrot algorithm, it yielded a 3-dimensional fractal surface. The initial
+experiments here proved that yes, it does, but in an interesting way.  There are
+regions of the defined space that show mandelbrot-like fractal features, others
+that seem to be smooth curves, and yet others that may be pure chaos.  A viewer
+with zooming functionality will be necessary to properly explore the structure.
+
+The current iteration of the viewer is done in python with tkinter.  I may later
+switch to a faster language if I cannot squeeze considerably shorter render times,
+but for now I want to get this viewer into a functional state.
+
+Task list:
+Fully create the interface elements.  I want next zoom points visible and
+editable, ability to set a point with the mouse in the windows. Possibly other ways to page frames, and the zoom button itself.
+Put in GIT/turn task list into issues?
+
+The numbers are not a field but are a ring since they're not closed under
+division: omega/omega could consistently be either 1 or omega.
+
+without numba 200: 1.37
+numba doesn't work.  But after parallelizing at the plane
+level, 0.16
+pypy next, troublesome.
+zoom check.
+center -0.3225 0.5625 -0.5325
+edge -0.3225 0.7125 -0.6825
+radius 0.15
+minx: -0.4725 maxx=-0.1725
+miny=0.4125 maxy=0.7125
+minz=-0.6825 maxz=-0.3825
+
+Looking deeply at the fractal shape with a mostly-working
+zoom functionality, I certainly do see fractal behavior,
+areas that can zoom infinitely and reveal new but similar
+structures.  However, it is not very 3-dimension where
+it is fractal: the interesting areas are in a very narrow
+plane where x=y+C.
+
+Next step: look at the other six options, starting with
+the two z^3 fractals.
+The right-handed (z*z)*z version looks better; there's
+more interesting things going on in the yz plane. I'm
+still seeing the symnetry on the xz and xy plane that
+almost seems suspicious, like something is wrong somewhere
+Left handed is similar enough.
+z^3 asymtoptic (omega^2=-omega)
