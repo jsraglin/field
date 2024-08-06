@@ -7,6 +7,7 @@ from PIL import Image
 from field import field
 import multiprocessing
 from functools import partial
+import shutil
 
 class fractal:
     @staticmethod
@@ -131,8 +132,10 @@ class Fractalapp:
         self.jx=0.0
         self.jy=0.0
         self.jz=0.0
+        self.savedirs=set()
         self.savedir="shape"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
         print(self.savedir)
+        self.savedirs.add(self.savedir)
         f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize)
         f.render()
         self.xfr=imagesize//2
@@ -181,7 +184,7 @@ class Fractalapp:
         def get_positionZ(event):
             clickx=event.y
             clicky=imagesize-event.x
-            clickz=self.zfr
+            clickz=imagesize-self.zfr
             self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/imagesize
             self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/imagesize
             self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/imagesize
@@ -235,6 +238,8 @@ class Fractalapp:
         boxYFrame.insert("1.0",str(self.yfr))
         boxZFrame=Text(fr22,height=1,width=5)
         boxZFrame.insert("1.0",str(self.zfr))
+        boxSaveDir=Text(fr22,height=1,width=30)
+        boxSaveDir.insert("1.0","C:/Fractals")
         self.centerTxt=StringVar()
         self.centerTxt.set("No Center Set")
         zoomcenter=Label(fr22,textvariable=self.centerTxt)
@@ -327,6 +332,7 @@ class Fractalapp:
                     self.savedir="shape"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
                     self.fractalinfo.set("Mandelbrot type fractal, (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax))
                 print(self.savedir)
+                self.savedirs.add(self.savedir)
                 f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,julia=self.isjulia,jx=self.jx,jy=self.jy,jz=self.jz)
                 f.render()
                 self.xfr=imagesize//2
@@ -362,6 +368,7 @@ class Fractalapp:
                 self.savedir="julia"+str(self.jx)+str(self.jy)+str(self.jz)+"at"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
                 self.fractalinfo.set("Julia type fractal at x={6:.6f} y={7:.6f} z={8:.6f} (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, self.jx, self.jy, self.jz))
                 print(self.savedir)
+                self.savedirs.add(self.savedir)
                 f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,julia=True,jx=self.jx,jy=self.jy,jz=self.jz)
                 f.render()
                 self.xfr=imagesize//2
@@ -379,22 +386,35 @@ class Fractalapp:
                 boxZFrame.delete("1.0",END)
                 boxZFrame.insert("1.0",str(self.zfr))
                 update_frames()
+        def Save():
+            path=boxSaveDir.get("1.0", 'end-1c')
+            os.makedirs(path,exist_ok=True)
+            shutil.copytree(self.savedir,path+"\\"+self.savedir,dirs_exist_ok=True)
+            
         self.fractalinfo=StringVar()
         self.fractalinfo.set("Mandelbrot type fractal, (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax))
         infoLabel=Label(fr22,textvariable=self.fractalinfo)
         refreshButton=Button(fr22,text="Refresh",command=update_frames)
         zoomButton=Button(fr22,text="Zoom",command=Zoom)
         juliaButton=Button(fr22,text="Julia",command=Julia)
+        saveButton=Button(fr22,text="Save",command=Save)
         infoLabel.pack()
         boxXFrame.pack()
         boxYFrame.pack()
         boxZFrame.pack()
+        boxSaveDir.pack()
         refreshButton.pack()
         zoomcenter.pack()
         zoomedge.pack()
         zoomButton.pack()
         juliaButton.pack()
+        saveButton.pack()
         fr22.grid(row=2,column=2)
+        def Cleanup(event):
+            for oldshape in self.savedirs:
+                if os.path.isdir(oldshape):
+                    shutil.rmtree(oldshape)
+        master.bind("<Destroy>",Cleanup)
         
 def main():
     root=Tk()
