@@ -59,3 +59,13 @@ still seeing the symnetry on the xz and xy plane that
 almost seems suspicious, like something is wrong somewhere
 Left handed is similar enough.
 z^3 asymtoptic (omega^2=-omega)
+
+Z: box z and x reversed, y okay. zoom is right.
+X: box right, zoom wrong
+
+Changed file to .jpg so it could work with 3dSlicer and other
+DICOM viewers, took a look in the former and there, based on the
+X frames, the Y-frame view is flipped horizontally, and the Z-frame view
+is flipped vertically.  So I should probably flip those in render
+and work on the zoom from there, so I'm generating actual 
+axial/coronal/sagittal planes.
