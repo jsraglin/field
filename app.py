@@ -1,22 +1,28 @@
+######################################################################
+# Imports                                                            #
+######################################################################
 import math
 import numpy
 import os
 from tkinter import *
 import _tkinter
-from PIL import Image
+from PIL import ImageTk, Image
 from field import field
 import multiprocessing
 from functools import partial
 import shutil
 
 class fractal:
+#####################################
+# Methods                           #
+#####################################
     @staticmethod
     def calcPlane(x, ymin, ymax, zmin, zmax, imagesize,colormap,julia=False,jx=0.0,jy=0.0,jz=0.0):
         plane=numpy.zeros((imagesize, imagesize, 3),dtype=numpy.uint8)
         for ypix in range(imagesize):
-            y=ymin+ypix*(ymax-ymin)/imagesize
+            y=ymin+ypix*(ymax-ymin)/(imagesize-1)
             for zpix in range(imagesize):
-                z=zmin+zpix*(zmax-zmin)/imagesize
+                z=zmin+zpix*(zmax-zmin)/(imagesize-1)
                 if julia:
                     c=field(jx,jy,jz)
                     zz=field(x,y,z)
@@ -43,7 +49,7 @@ class fractal:
         plane_part=partial(fractal.calcPlane,ymin=ymin,ymax=ymax,zmin=zmin,zmax=zmax,imagesize=imagesize,colormap=colormap,julia=self.isjulia,jx=self.jx,jy=self.jy,jz=self.jz)
         x=list()
         for xpix in range(imagesize):
-            x.append(xmin+xpix*(xmax-xmin)/imagesize)
+            x.append(xmin+xpix*(xmax-xmin)/(imagesize-1))
 #            self.shape[xpix]=fractal.calcPlane(x, ymin, ymax, zmin, zmax, imagesize, colormap)
         outputs=pool.map(plane_part,x)
         pool.close()
@@ -81,15 +87,15 @@ class fractal:
         for xpix in range(self.imagesize):
             rawslice=self.shape[xpix,:,:,:]
             slice=Image.fromarray(rawslice,mode="RGB")
-            slice.save(savedir+"\XFrame"+str(xpix)+".gif")
+            slice.save(savedir+"\XFrame"+str(xpix)+".jpg")
         for ypix in range(self.imagesize):
             rawslice=self.shape[:,ypix,:,:]
-            slice=Image.fromarray(rawslice,mode="RGB")
-            slice.save(savedir+"\YFrame"+str(ypix)+".gif")
+            slice=Image.fromarray(rawslice,mode="RGB").transpose(Image.FLIP_TOP_BOTTOM)
+            slice.save(savedir+"\YFrame"+str(ypix)+".jpg")
         for zpix in range(self.imagesize):
             rawslice=self.shape[:,:,zpix,:]
-            slice=Image.fromarray(rawslice,mode="RGB")
-            slice.save(savedir+"\ZFrame"+str(zpix)+".gif")
+            slice=Image.fromarray(rawslice,mode="RGB").transpose(Image.FLIP_LEFT_RIGHT)
+            slice.save(savedir+"\ZFrame"+str(zpix)+".jpg")
         zf=open(savedir+"\zeroes.csv","w")
         for xz in range(self.imagesize):
             for yz in range(self.imagesize):
@@ -103,7 +109,7 @@ class fractal:
 class Fractalapp:
     def __init__(self,master):
         appMap=dict()
-        imagesize=300
+        imagesize=201
         self.xmin=-1.5
         self.xmax=1.5
         self.ymin=-1.5
@@ -163,31 +169,31 @@ class Fractalapp:
 
         def get_positionX(event):
             clickx=self.xfr
-            clicky=event.x
-            clickz=event.y
-            self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/imagesize
-            self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/imagesize
-            self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/imagesize
+            clicky=imagesize-event.x
+            clickz=imagesize-event.y
+            self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/(imagesize-1)
+            self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
+            self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
             print(str(clickx)+","+str(clicky))
             print(field(self.xcl,self.ycl,self.zcl))
             update_zoom()
         def get_positionY(event):
-            clickx=event.y
+            clickx=imagesize-event.y
             clicky=self.yfr
             clickz=event.x
-            self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/imagesize
-            self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/imagesize
-            self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/imagesize
+            self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/(imagesize-1)
+            self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
+            self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
             print(str(clickx)+","+str(clicky))
             print(field(self.xcl,self.ycl,self.zcl))
             update_zoom()
         def get_positionZ(event):
             clickx=event.y
             clicky=imagesize-event.x
-            clickz=imagesize-self.zfr
-            self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/imagesize
-            self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/imagesize
-            self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/imagesize
+            clickz=self.zfr
+            self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/(imagesize-1)
+            self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
+            self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
             print(str(clickx)+","+str(clicky))
             print(field(self.xcl,self.ycl,self.zcl))
             update_zoom()
@@ -198,10 +204,10 @@ class Fractalapp:
         cx.bind("<Button-1>",get_positionX)
         cx.pack()
         xlabeltext=StringVar()
-        xlabeltext.set("Frame# "+str(self.xfr)+ "X="+str(self.xmin+self.xfr*(self.xmax-self.xmin)/imagesize))
+        xlabeltext.set("Frame# "+str(self.xfr)+ "X="+str(self.xmin+self.xfr*(self.xmax-self.xmin)/(imagesize-1)))
         cxlabel=Label(cxf,textvariable=xlabeltext)
         cxlabel.pack()
-        xim=PhotoImage(file=(self.savedir+"\XFrame"+str(self.xfr)+".gif"))
+        xim=ImageTk.PhotoImage(Image.open(self.savedir+"\XFrame"+str(self.xfr)+".jpg"))
         conx=cx.create_image(0,0,image=xim,anchor=NW)
         appMap['conx']=conx
         cyf=Frame(master)
@@ -210,11 +216,11 @@ class Fractalapp:
         cy.bind("<Button-1>",get_positionY)
         cy.pack()
         ylabeltext=StringVar()
-        ylabeltext.set("Frame# "+str(self.yfr)+ "Y="+str(self.ymin+self.yfr*(self.ymax-self.ymin)/imagesize))
+        ylabeltext.set("Frame# "+str(self.yfr)+ "Y="+str(self.ymin+self.yfr*(self.ymax-self.ymin)/(imagesize-1)))
         cylabel=Label(cyf,textvariable=ylabeltext)
         cylabel.pack()
-        yim=PhotoImage(file=(self.savedir+"\YFrame"+str(self.yfr)+".gif"))
-        #yim=PhotoImage(file=(dir+"\YFrame50.gif"))
+        yim=ImageTk.PhotoImage(Image.open(self.savedir+"\YFrame"+str(self.yfr)+".jpg"))
+        #yim=PhotoImage(file=(dir+"\YFrame50.jpg"))
         cony=cy.create_image(0,0,image=yim,anchor=NW)
         appMap['cony']=cony
         czf=Frame(master)
@@ -223,11 +229,11 @@ class Fractalapp:
         cz.bind("<Button-1>",get_positionZ)
         cz.pack()
         zlabeltext=StringVar()
-        zlabeltext.set("Frame# "+str(self.zfr)+ "Z="+str(self.zmin+self.zfr*(self.zmax-self.zmin)/imagesize))
+        zlabeltext.set("Frame# "+str(self.zfr)+ "Z="+str(self.zmin+self.zfr*(self.zmax-self.zmin)/(imagesize-1)))
         czlabel=Label(czf,textvariable=zlabeltext)
         czlabel.pack()
-        zim=PhotoImage(file=(self.savedir+"\ZFrame"+str(self.zfr)+".gif"))
-        #zim=PhotoImage(file=(dir+"\ZFrame50.gif"))
+        zim=ImageTk.PhotoImage(Image.open(self.savedir+"\ZFrame"+str(self.zfr)+".jpg"))
+        #zim=PhotoImage(file=(dir+"\ZFrame50.jpg"))
         conz=cz.create_image(0,0,image=zim,anchor=NW)
         appMap['conz']=conz
         fr22=Frame(master)
@@ -251,18 +257,47 @@ class Fractalapp:
             self.xfr=int(boxXFrame.get("1.0", 'end-1c'))
             self.yfr=int(boxYFrame.get("1.0", 'end-1c'))
             self.zfr=int(boxZFrame.get("1.0", 'end-1c'))
-            xim=PhotoImage(file=(self.savedir+"\XFrame"+str(self.xfr)+".gif"))
+            xim=ImageTk.PhotoImage(Image.open(self.savedir+"\XFrame"+str(self.xfr)+".jpg"))
             conx=cx.create_image(0,0,image=xim,anchor=NW)
             appMap['conx']=conx
             cx.imgref=xim
-            yim=PhotoImage(file=(self.savedir+"\YFrame"+str(self.yfr)+".gif"))
+            yim=ImageTk.PhotoImage(Image.open(self.savedir+"\YFrame"+str(self.yfr)+".jpg"))
             cony=cy.create_image(0,0,image=yim,anchor=NW)
             appMap['cony']=cony
             cy.imgref=yim
-            zim=PhotoImage(file=(self.savedir+"\ZFrame"+str(self.zfr)+".gif"))
+            zim=ImageTk.PhotoImage(Image.open(self.savedir+"\ZFrame"+str(self.zfr)+".jpg"))
             conz=cz.create_image(0,0,image=zim,anchor=NW)
             appMap['conz']=conz
             cz.imgref=zim
+            if self.secondclick:
+                print("Updating with two points clicked")
+                box_xmin=((self.centerx-self.radius)-self.xmin)/(self.xmax-self.xmin)*(imagesize+1)
+                box_xmax=((self.centerx+self.radius)-self.xmin)/(self.xmax-self.xmin)*(imagesize+1)
+                box_ymin=((self.centery-self.radius)-self.ymin)/(self.ymax-self.ymin)*(imagesize+1)
+                box_ymax=((self.centery+self.radius)-self.ymin)/(self.ymax-self.ymin)*(imagesize+1)
+                box_zmin=((self.centerz-self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
+                box_zmax=((self.centerz+self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
+                print((box_xmin,box_xmax,box_ymin,box_ymax,box_zmin,box_zmax))
+                print((self.xfr, self.yfr, self.zfr))
+                if (self.xfr>=box_xmin) and (self.xfr<=box_xmax):
+                    print("x visible")
+                    print((box_ymin,box_ymax,box_zmin,box_zmax))
+                    if self.xfr==int(self.centerx-self.xmin/(self.xmax-self.xmin)*(imagesize+1)):
+                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="black",width=1)    
+                    else:
+                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="white",width=1)    
+                if (self.yfr>=box_ymin) and (self.yfr<=box_ymax):
+                    print("y visible")
+                    if self.yfr==int(self.centery-self.ymin/(self.ymax-self.ymin)*(imagesize+1)):
+                        cy.create_rectangle(box_zmin,imagesize-box_xmax,box_zmax,imagesize-box_xmin,outline="black",width=1)
+                    else:
+                        cy.create_rectangle(box_zmin,imagesize-box_xmax,box_zmax,imagesize-box_xmin,outline="white",width=1)
+                if (self.zfr>=box_zmin) and (self.zfr<=box_zmax):
+                    print("z visible")
+                    if (self.zfr)==int(self.centerz-self.zmin/(self.zmax-self.zmin)*(imagesize+1)):
+                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="black",width=1)
+                    else:
+                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="white",width=1)
             master.update_idletasks()
         def decX(event="none"):
             if (self.xfr>0):
