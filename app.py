@@ -147,6 +147,91 @@ class Fractalapp:
         self.xfr=imagesize//2
         self.yfr=imagesize//2
         self.zfr=imagesize//2
+
+
+        def update_frames():
+            self.xfr=int(boxXFrame.get("1.0", 'end-1c'))
+            self.yfr=int(boxYFrame.get("1.0", 'end-1c'))
+            self.zfr=int(boxZFrame.get("1.0", 'end-1c'))
+            xim=ImageTk.PhotoImage(Image.open(self.savedir+"\XFrame"+str(self.xfr)+".jpg"))
+            conx=cx.create_image(0,0,image=xim,anchor=NW)
+            appMap['conx']=conx
+            cx.imgref=xim
+            yim=ImageTk.PhotoImage(Image.open(self.savedir+"\YFrame"+str(self.yfr)+".jpg"))
+            cony=cy.create_image(0,0,image=yim,anchor=NW)
+            appMap['cony']=cony
+            cy.imgref=yim
+            zim=ImageTk.PhotoImage(Image.open(self.savedir+"\ZFrame"+str(self.zfr)+".jpg"))
+            conz=cz.create_image(0,0,image=zim,anchor=NW)
+            appMap['conz']=conz
+            cz.imgref=zim
+            if self.secondclick:
+                print("Updating with two points clicked")
+                box_xmin=((self.centerx-self.radius)-self.xmin)/(self.xmax-self.xmin)*(imagesize+1)
+                box_xmax=((self.centerx+self.radius)-self.xmin)/(self.xmax-self.xmin)*(imagesize+1)
+                box_ymin=((self.centery-self.radius)-self.ymin)/(self.ymax-self.ymin)*(imagesize+1)
+                box_ymax=((self.centery+self.radius)-self.ymin)/(self.ymax-self.ymin)*(imagesize+1)
+                box_zmin=((self.centerz-self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
+                box_zmax=((self.centerz+self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
+                print((box_xmin,box_xmax,box_ymin,box_ymax,box_zmin,box_zmax))
+                print((self.xfr, self.yfr, self.zfr))
+                if (self.xfr>=box_xmin) and (self.xfr<=box_xmax):
+#                    print("x visible")
+                    print((box_xmin,box_xmax,box_ymin,box_ymax,box_zmin,box_zmax))
+                    print(self.xfr, int(box_xmin+(box_xmax-box_xmin)/2))
+                    if int(self.xfr)==int(box_xmin+(box_xmax-box_xmin)/2):
+                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="red",width=1)    
+                    else:
+                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="white",width=1)    
+                if (self.yfr>=box_ymin) and (self.yfr<=box_ymax):
+                    print("y visible")
+                    if int(self.yfr)==int(box_ymin+(box_ymax-box_ymin)/2):
+                        cy.create_rectangle(box_zmin,imagesize-box_xmax,box_zmax,imagesize-box_xmin,outline="red",width=1)
+                    else:
+                        cy.create_rectangle(box_zmin,imagesize-box_xmax,box_zmax,imagesize-box_xmin,outline="white",width=1)
+                if (self.zfr>=box_zmin) and (self.zfr<=box_zmax):
+                    print("z visible")
+                    if int(self.zfr)==int(box_zmin+(box_zmax-box_zmin)/2):
+                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="red",width=1)
+                    else:
+                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="white",width=1)
+            master.update_idletasks()
+        def decX(event="none"):
+            if (self.xfr>0):
+                self.xfr=self.xfr-1
+                boxXFrame.delete("1.0",END)
+                boxXFrame.insert("1.0",str(self.xfr))
+                update_frames()
+        def incX(event="none"):
+            if (self.xfr<imagesize-1):
+                self.xfr=self.xfr+1
+                boxXFrame.delete("1.0",END)
+                boxXFrame.insert("1.0",str(self.xfr))
+                update_frames()
+        def decY(event="none"):
+            if (self.yfr>0):
+                self.yfr=self.yfr-1
+                boxYFrame.delete("1.0",END)
+                boxYFrame.insert("1.0",str(self.yfr))
+                update_frames()
+        def incY(event="none"):
+            if (self.yfr<imagesize-1):
+                self.yfr=self.yfr+1
+                boxYFrame.delete("1.0",END)
+                boxYFrame.insert("1.0",str(self.yfr))
+                update_frames()
+        def decZ(event="none"):
+            if (self.zfr>0):
+                self.zfr=self.zfr-1
+                boxZFrame.delete("1.0",END)
+                boxZFrame.insert("1.0",str(self.zfr))
+                update_frames()
+        def incZ(event="none"):
+            if (self.zfr<imagesize-1):
+                self.zfr=self.zfr+1
+                boxZFrame.delete("1.0",END)
+                boxZFrame.insert("1.0",str(self.zfr))
+                update_frames()
         def update_zoom():
             if (self.firstclick):
                 self.edgex=self.xcl
@@ -163,6 +248,7 @@ class Fractalapp:
             edgetext=("Edge:{0:.6f}{1:.6f}{2:.6f}".format(self.edgex,self.edgey,self.edgez))
             self.centerTxt.set(centertext)
             self.edgeTxt.set(edgetext)
+            update_frames()
 #            print(centertext)
 #            print(edgetext)
 #            print(self.radius)
@@ -197,7 +283,6 @@ class Fractalapp:
             print(str(clickx)+","+str(clicky))
             print(field(self.xcl,self.ycl,self.zcl))
             update_zoom()
-
         cxf=Frame(master)
         cxf.grid(row=1,column=1)
         cx=Canvas(cxf,height=imagesize,width=imagesize)
@@ -252,89 +337,6 @@ class Fractalapp:
         self.edgeTxt=StringVar()
         self.edgeTxt.set("No Edge Set")
         zoomedge=Label(fr22,textvariable=self.edgeTxt)
-
-        def update_frames():
-            self.xfr=int(boxXFrame.get("1.0", 'end-1c'))
-            self.yfr=int(boxYFrame.get("1.0", 'end-1c'))
-            self.zfr=int(boxZFrame.get("1.0", 'end-1c'))
-            xim=ImageTk.PhotoImage(Image.open(self.savedir+"\XFrame"+str(self.xfr)+".jpg"))
-            conx=cx.create_image(0,0,image=xim,anchor=NW)
-            appMap['conx']=conx
-            cx.imgref=xim
-            yim=ImageTk.PhotoImage(Image.open(self.savedir+"\YFrame"+str(self.yfr)+".jpg"))
-            cony=cy.create_image(0,0,image=yim,anchor=NW)
-            appMap['cony']=cony
-            cy.imgref=yim
-            zim=ImageTk.PhotoImage(Image.open(self.savedir+"\ZFrame"+str(self.zfr)+".jpg"))
-            conz=cz.create_image(0,0,image=zim,anchor=NW)
-            appMap['conz']=conz
-            cz.imgref=zim
-            if self.secondclick:
-                print("Updating with two points clicked")
-                box_xmin=((self.centerx-self.radius)-self.xmin)/(self.xmax-self.xmin)*(imagesize+1)
-                box_xmax=((self.centerx+self.radius)-self.xmin)/(self.xmax-self.xmin)*(imagesize+1)
-                box_ymin=((self.centery-self.radius)-self.ymin)/(self.ymax-self.ymin)*(imagesize+1)
-                box_ymax=((self.centery+self.radius)-self.ymin)/(self.ymax-self.ymin)*(imagesize+1)
-                box_zmin=((self.centerz-self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
-                box_zmax=((self.centerz+self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
-                print((box_xmin,box_xmax,box_ymin,box_ymax,box_zmin,box_zmax))
-                print((self.xfr, self.yfr, self.zfr))
-                if (self.xfr>=box_xmin) and (self.xfr<=box_xmax):
-                    print("x visible")
-                    print((box_ymin,box_ymax,box_zmin,box_zmax))
-                    if self.xfr==int(self.centerx-self.xmin/(self.xmax-self.xmin)*(imagesize+1)):
-                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="black",width=1)    
-                    else:
-                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="white",width=1)    
-                if (self.yfr>=box_ymin) and (self.yfr<=box_ymax):
-                    print("y visible")
-                    if self.yfr==int(self.centery-self.ymin/(self.ymax-self.ymin)*(imagesize+1)):
-                        cy.create_rectangle(box_zmin,imagesize-box_xmax,box_zmax,imagesize-box_xmin,outline="black",width=1)
-                    else:
-                        cy.create_rectangle(box_zmin,imagesize-box_xmax,box_zmax,imagesize-box_xmin,outline="white",width=1)
-                if (self.zfr>=box_zmin) and (self.zfr<=box_zmax):
-                    print("z visible")
-                    if (self.zfr)==int(self.centerz-self.zmin/(self.zmax-self.zmin)*(imagesize+1)):
-                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="black",width=1)
-                    else:
-                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="white",width=1)
-            master.update_idletasks()
-        def decX(event="none"):
-            if (self.xfr>0):
-                self.xfr=self.xfr-1
-                boxXFrame.delete("1.0",END)
-                boxXFrame.insert("1.0",str(self.xfr))
-                update_frames()
-        def incX(event="none"):
-            if (self.xfr<imagesize-1):
-                self.xfr=self.xfr+1
-                boxXFrame.delete("1.0",END)
-                boxXFrame.insert("1.0",str(self.xfr))
-                update_frames()
-        def decY(event="none"):
-            if (self.yfr>0):
-                self.yfr=self.yfr-1
-                boxYFrame.delete("1.0",END)
-                boxYFrame.insert("1.0",str(self.yfr))
-                update_frames()
-        def incY(event="none"):
-            if (self.yfr<imagesize-1):
-                self.yfr=self.yfr+1
-                boxYFrame.delete("1.0",END)
-                boxYFrame.insert("1.0",str(self.yfr))
-                update_frames()
-        def decZ(event="none"):
-            if (self.zfr>0):
-                self.zfr=self.zfr-1
-                boxZFrame.delete("1.0",END)
-                boxZFrame.insert("1.0",str(self.zfr))
-                update_frames()
-        def incZ(event="none"):
-            if (self.zfr<imagesize-1):
-                self.zfr=self.zfr+1
-                boxZFrame.delete("1.0",END)
-                boxZFrame.insert("1.0",str(self.zfr))
-                update_frames()
 
         master.bind('j',decX)
         master.bind('k',incX)
@@ -425,7 +427,20 @@ class Fractalapp:
             path=boxSaveDir.get("1.0", 'end-1c')
             os.makedirs(path,exist_ok=True)
             shutil.copytree(self.savedir,path+"\\"+self.savedir,dirs_exist_ok=True)
-            
+        
+        def Reset():
+            self.firstclick=False
+            self.secondclick=False
+            self.centerx=0.0
+            self.centery=0.0
+            self.centerz=0.0
+            self.edgex=0.0
+            self.edgey=0.0
+            self.edgez=0.0
+            self.centerTxt.set("No Center Set")
+            self.edgeTxt.set("No Edge Set")    
+            update_frames()
+
         self.fractalinfo=StringVar()
         self.fractalinfo.set("Mandelbrot type fractal, (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax))
         infoLabel=Label(fr22,textvariable=self.fractalinfo)
@@ -433,6 +448,7 @@ class Fractalapp:
         zoomButton=Button(fr22,text="Zoom",command=Zoom)
         juliaButton=Button(fr22,text="Julia",command=Julia)
         saveButton=Button(fr22,text="Save",command=Save)
+        resetButton=Button(fr22,text="Reset",command=Reset)
         infoLabel.pack()
         boxXFrame.pack()
         boxYFrame.pack()
@@ -444,12 +460,14 @@ class Fractalapp:
         zoomButton.pack()
         juliaButton.pack()
         saveButton.pack()
+        resetButton.pack()
         fr22.grid(row=2,column=2)
         def Cleanup(event):
             for oldshape in self.savedirs:
                 if os.path.isdir(oldshape):
                     shutil.rmtree(oldshape)
         master.bind("<Destroy>",Cleanup)
+        update_frames()
         
 def main():
     root=Tk()
