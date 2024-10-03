@@ -7,7 +7,7 @@ import os
 from tkinter import *
 import _tkinter
 from PIL import ImageTk, Image
-from field import field
+from ring import triel, atriel, braid, abraid, chaos, cbraid, dbraid, anarch, zbraid, flatq, bulb3
 import multiprocessing
 from functools import partial
 import shutil
@@ -17,21 +17,101 @@ class fractal:
 # Methods                           #
 #####################################
     @staticmethod
-    def calcPlane(x, ymin, ymax, zmin, zmax, imagesize,colormap,julia=False,jx=0.0,jy=0.0,jz=0.0):
+    def calcPlane(x, ymin, ymax, zmin, zmax, imagesize,colormap,ringtype,itertype,julia=False,jx=0.0,jy=0.0,jz=0.0,):
         plane=numpy.zeros((imagesize, imagesize, 3),dtype=numpy.uint8)
         for ypix in range(imagesize):
             y=ymin+ypix*(ymax-ymin)/(imagesize-1)
             for zpix in range(imagesize):
                 z=zmin+zpix*(zmax-zmin)/(imagesize-1)
                 if julia:
-                    c=field(jx,jy,jz)
-                    zz=field(x,y,z)
+                    match ringtype:
+                        case "triel":
+                            c=triel(jx,jy,jz)
+                            zz=triel(x,y,z)
+                        case "atriel":
+                            c=atriel(jx,jy,jz)
+                            zz=atriel(x,y,z)
+                        case "braid":
+                            c=braid(jx,jy,jz)
+                            zz=braid(x,y,z)
+                        case "abraid":
+                            c=abraid(jx,jy,jz)
+                            zz=abraid(x,y,z)
+                        case "chaos":
+                            c=chaos(jx,jy,jz)
+                            zz=chaos(x,y,z)
+                        case "cbraid":
+                            c=cbraid(jx,jy.jz)
+                            zz=cbraid(x,y,z)
+                        case "dbraid":
+                            c=dbraid(jx,jy.jz)
+                            zz=dbraid(x,y,z)
+                        case "anarch":
+                            c=anarch(jx,jy.jz)
+                            zz=anarch(x,y,z)
+                        case "zbraid":
+                            c=zbraid(jx,jy,jz)
+                            zz=zbraid(x,y,z)
+                        case "flatq":
+                            c=flatq(jx,jy,jz)
+                            zz=flatq(x,y,z)
+                        case "bulb3":
+                            c=bulb3(jx,jy,jz)
+                            zz=bulb3(x,y,z)
+                        case _:
+                            c=triel(jx,jy,jz)
+                            zz=triel(x,y,z)
                 else:
-                    c=field(x,y,z)
-                    zz=field(0,0,0)
+                    match ringtype:
+                        case "triel":
+                            c=triel(x,y,z)
+                            zz=triel(0,0,0)
+                        case "atriel":
+                            c=atriel(x,y,z)
+                            zz=atriel(0,0,0)
+                        case "braid":
+                            c=braid(x,y,z)
+                            zz=braid(0,0,0)
+                        case "abraid":
+                            c=abraid(x,y,z)
+                            zz=abraid(0,0,0)
+                        case "chaos":
+                            c=chaos(x,y,z)
+                            zz=chaos(0,0,0)
+                        case "cbraid":
+                            c=cbraid(x,y,z)
+                            zz=cbraid(0,0,0)
+                        case "dbraid":
+                            c=dbraid(x,y,z)
+                            zz=dbraid(0,0,0)
+                        case "anarch":
+                            c=anarch(x,y,z)
+                            zz=anarch(0,0,0)
+                        case "zbraid":
+                            c=zbraid(x,y,z)
+                            zz=zbraid(0,0,0)
+                        case "flatq":
+                            c=flatq(x,y,z)
+                            zz=flatq(0,0,0)
+                        case "bulb3":
+                            c=bulb3(x,y,z)
+                            zz=bulb3(0,0,0)
+                        case _:
+                            c=triel(x,y,z)
+                            zz=triel(0,0,0)
                 count=0
+                match itertype:
+                    case "z*z":
+                        iterate=lambda z,c:z*z+c
+                    case "z*(z*z)":
+                        iterate=lambda z,c:z*(z*z)+c
+                    case "(z*z)*z":
+                        iterate=lambda z,c:(z*z)*z+c
+                    case _:
+                        iterate=lambda z,c:z*z+c
                 while (count<100) and (zz.magsq()<5000):
-                    zz=zz*(zz*zz)+c
+                    zz=iterate(zz,c)
+#                    zz=(zz*zz)+c
                     count=count+1
 #                    if ypix==100 and zpix==100:
 #                        print(zz)
@@ -43,10 +123,10 @@ class fractal:
                     plane[ypix][zpix][2]=colormap[count][2]
         return plane
 
-    def calcFractal(self, xmin, xmax, ymin, ymax, zmin, zmax, imagesize, colormap):
+    def calcFractal(self, xmin, xmax, ymin, ymax, zmin, zmax, imagesize, colormap, ringtype, itertype):
         poolsize=multiprocessing.cpu_count() * 2
         pool=multiprocessing.Pool(processes=poolsize)
-        plane_part=partial(fractal.calcPlane,ymin=ymin,ymax=ymax,zmin=zmin,zmax=zmax,imagesize=imagesize,colormap=colormap,julia=self.isjulia,jx=self.jx,jy=self.jy,jz=self.jz)
+        plane_part=partial(fractal.calcPlane,ymin=ymin,ymax=ymax,zmin=zmin,zmax=zmax,imagesize=imagesize,colormap=colormap,julia=self.isjulia,jx=self.jx,jy=self.jy,jz=self.jz,ringtype=ringtype,itertype=itertype)
         x=list()
         for xpix in range(imagesize):
             x.append(xmin+xpix*(xmax-xmin)/(imagesize-1))
@@ -56,7 +136,7 @@ class fractal:
         pool.join()
         return numpy.stack(outputs,axis=0)
 
-    def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax, imagesize, julia=False, jx=0.0, jy=0.0, jz=0.0):
+    def __init__(self, xmin, xmax, ymin, ymax, zmin, zmax, imagesize, julia=False, jx=0.0, jy=0.0, jz=0.0, ringtype="triel",itertype="z*z"):
         self.colormap=numpy.zeros((256,3),dtype=numpy.uint8)
         self.shape=numpy.zeros((imagesize,imagesize,imagesize,3),dtype=numpy.uint8)
         self.xmin=xmin
@@ -74,7 +154,7 @@ class fractal:
             self.colormap[c][0]=c*7%255
             self.colormap[c][1]=c*26%255
             self.colormap[c][2]=c*16%255
-        self.shape=self.calcFractal(xmin, xmax, ymin, ymax, zmin, zmax, imagesize, self.colormap)
+        self.shape=self.calcFractal(xmin, xmax, ymin, ymax, zmin, zmax, imagesize, self.colormap, ringtype, itertype)
 
 
     def render(self):
@@ -84,17 +164,30 @@ class fractal:
             savedir="shape"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(self.imagesize)
         print(savedir)
         os.makedirs(savedir,exist_ok=True)
+        os.makedirs(savedir+"\\slicer",exist_ok=True)
         for xpix in range(self.imagesize):
-            rawslice=self.shape[xpix,:,:,:]
+            rawslice=self.shape[xpix,:,:,:].copy()
             slice=Image.fromarray(rawslice,mode="RGB")
             slice.save(savedir+"\XFrame"+str(xpix)+".jpg")
+            for yp in range(self.imagesize):
+                for zp in range(self.imagesize):
+                    if (rawslice[yp,zp,0]==0 and rawslice[yp,zp,1]==0 and rawslice[yp,zp,2]==0):
+                        rawslice[yp,zp,0]=255
+                        rawslice[yp,zp,1]=255
+                        rawslice[yp,zp,2]=255
+                    else:
+                        rawslice[yp,zp,0]=0
+                        rawslice[yp,zp,1]=0
+                        rawslice[yp,zp,2]=0
+            slicer=Image.fromarray(rawslice,mode="RGB")
+            slicer.save(savedir+"\\slicer\Frame"+str(xpix)+".jpg")
         for ypix in range(self.imagesize):
             rawslice=self.shape[:,ypix,:,:]
             slice=Image.fromarray(rawslice,mode="RGB").transpose(Image.FLIP_TOP_BOTTOM)
             slice.save(savedir+"\YFrame"+str(ypix)+".jpg")
         for zpix in range(self.imagesize):
             rawslice=self.shape[:,:,zpix,:]
-            slice=Image.fromarray(rawslice,mode="RGB").transpose(Image.FLIP_LEFT_RIGHT)
+            slice=Image.fromarray(rawslice,mode="RGB").transpose(Image.FLIP_TOP_BOTTOM)
             slice.save(savedir+"\ZFrame"+str(zpix)+".jpg")
         zf=open(savedir+"\zeroes.csv","w")
         for xz in range(self.imagesize):
@@ -109,7 +202,7 @@ class fractal:
 class Fractalapp:
     def __init__(self,master):
         appMap=dict()
-        imagesize=201
+        imagesize=301
         self.xmin=-1.5
         self.xmax=1.5
         self.ymin=-1.5
@@ -135,15 +228,57 @@ class Fractalapp:
         self.isjulia=False
         self.firstclick=False
         self.secondclick=False
+        self.itertype=StringVar()
+        self.itertype.set("z*z")
+        self.ringtype=StringVar()
+        self.ringtype.set("triel")
         self.jx=0.0
         self.jy=0.0
         self.jz=0.0
+#############################################################
+# Do Initialization Window                                  #
+#############################################################
+        setupWindow=Toplevel(master)
+        iterOptions= [
+            "z*z",
+            "z*(z*z)",
+            "(z*z)*x"
+        ]
+        ringOptions= [
+            "triel",
+            "atriel",
+            "braid",
+            "abraid",
+            "chaos",
+            "cbraid",
+            "dbraid",
+            "anarch",
+            "zbraid",
+            "flatq",
+            "bulb3"
+        ]
+        iterDrop=OptionMenu(setupWindow,self.itertype,*iterOptions)
+        iterDrop.pack()
+        ringDrop=OptionMenu(setupWindow,self.ringtype,*ringOptions)
+        ringDrop.pack()
+        button_close=Button(setupWindow,text="Close",command=setupWindow.destroy)
+        button_close.pack()
+        setupWindow.focus()
+        setupWindow.grab_set()
+        master.withdraw()
+        master.wait_window(setupWindow)
+    #####################################################################
+    # End Initialization Window                                         #
+    #####################################################################
+
         self.savedirs=set()
         self.savedir="shape"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
         print(self.savedir)
         self.savedirs.add(self.savedir)
-        f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize)
+        f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,ringtype=self.ringtype.get(),itertype=self.itertype.get())
         f.render()
+        master.deiconify()
+
         self.xfr=imagesize//2
         self.yfr=imagesize//2
         self.zfr=imagesize//2
@@ -192,9 +327,9 @@ class Fractalapp:
                 if (self.zfr>=box_zmin) and (self.zfr<=box_zmax):
                     print("z visible")
                     if int(self.zfr)==int(box_zmin+(box_zmax-box_zmin)/2):
-                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="red",width=1)
+                        cz.create_rectangle(box_ymin,imagesize-box_xmax,box_ymax,imagesize-box_xmin,outline="red",width=1)
                     else:
-                        cz.create_rectangle(imagesize-box_ymax,box_xmin,imagesize-box_ymin,box_xmax,outline="white",width=1)
+                        cz.create_rectangle(box_ymin,imagesize-box_xmax,box_ymax,imagesize-box_xmin,outline="white",width=1)
             master.update_idletasks()
         def decX(event="none"):
             if (self.xfr>0):
@@ -261,7 +396,7 @@ class Fractalapp:
             self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
             self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
             print(str(clickx)+","+str(clicky))
-            print(field(self.xcl,self.ycl,self.zcl))
+            print(triel(self.xcl,self.ycl,self.zcl))
             update_zoom()
         def get_positionY(event):
             clickx=imagesize-event.y
@@ -271,17 +406,17 @@ class Fractalapp:
             self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
             self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
             print(str(clickx)+","+str(clicky))
-            print(field(self.xcl,self.ycl,self.zcl))
+            print(triel(self.xcl,self.ycl,self.zcl))
             update_zoom()
         def get_positionZ(event):
-            clickx=event.y
-            clicky=imagesize-event.x
+            clickx=imagesize-event.y
+            clicky=event.x
             clickz=self.zfr
             self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/(imagesize-1)
             self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
             self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
             print(str(clickx)+","+str(clicky))
-            print(field(self.xcl,self.ycl,self.zcl))
+            print(triel(self.xcl,self.ycl,self.zcl))
             update_zoom()
         cxf=Frame(master)
         cxf.grid(row=1,column=1)
@@ -364,13 +499,13 @@ class Fractalapp:
                 self.secondclick=False
                 if self.isjulia:
                     self.savedir="julia"+str(self.jx)+str(self.jy)+str(self.jz)+"at"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
-                    self.fractalinfo.set("Julia type fractal at x={6:.6f} y={7:.6f} z={8:.6f} (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, self.jx, self.jy, self.jz))
+                    self.fractalinfo.set("Julia type fractal at x={6:.6f} y={7:.6f} z={8:.6f} {ringtype} {itertype}\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, self.jx, self.jy, self.jz,ringtype=self.ringtype.get(),itertype=self.itertype.get()))
                 else:
                     self.savedir="shape"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
-                    self.fractalinfo.set("Mandelbrot type fractal, (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax))
+                    self.fractalinfo.set("Mandelbrot type fractal, {ringtype} {itertype}\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, ringtype=self.ringtype.get(), itertype=self.itertype.get()))
                 print(self.savedir)
                 self.savedirs.add(self.savedir)
-                f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,julia=self.isjulia,jx=self.jx,jy=self.jy,jz=self.jz)
+                f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,julia=self.isjulia,jx=self.jx,jy=self.jy,jz=self.jz,ringtype=self.ringtype.get(),itertype=self.itertype.get())
                 f.render()
                 self.xfr=imagesize//2
                 self.yfr=imagesize//2
@@ -403,10 +538,10 @@ class Fractalapp:
                 self.secondclick=False
                 self.isjulia=True
                 self.savedir="julia"+str(self.jx)+str(self.jy)+str(self.jz)+"at"+str(self.xmin)+str(self.xmax)+str(self.ymin)+str(self.ymax)+str(self.zmin)+str(self.zmax)+str(imagesize)
-                self.fractalinfo.set("Julia type fractal at x={6:.6f} y={7:.6f} z={8:.6f} (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, self.jx, self.jy, self.jz))
+                self.fractalinfo.set("Julia type fractal {ringtype} {itertype} at x={6:.6f} y={7:.6f} z={8:.6f}\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, self.jx, self.jy, self.jz, ringtype=self.ringtype.get(), itertype=self.itertype.get()))
                 print(self.savedir)
                 self.savedirs.add(self.savedir)
-                f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,julia=True,jx=self.jx,jy=self.jy,jz=self.jz)
+                f=fractal(self.xmin,self.xmax,self.ymin,self.ymax,self.zmin,self.zmax,imagesize,julia=True,jx=self.jx,jy=self.jy,jz=self.jz,ringtype=self.ringtype.get(),itertype=self.itertype.get())
                 f.render()
                 self.xfr=imagesize//2
                 self.yfr=imagesize//2
@@ -442,7 +577,7 @@ class Fractalapp:
             update_frames()
 
         self.fractalinfo=StringVar()
-        self.fractalinfo.set("Mandelbrot type fractal, (z*z)*z\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax))
+        self.fractalinfo.set("Mandelbrot type fractal, {ringtype} {itertype}\n X:{0:.6f}-{1:.6f} Y:{2:.6f}-{3:.6f} Z:{4:.6f}-{5:.6f}".format(self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax, ringtype=self.ringtype.get(), itertype=self.itertype.get()))
         infoLabel=Label(fr22,textvariable=self.fractalinfo)
         refreshButton=Button(fr22,text="Refresh",command=update_frames)
         zoomButton=Button(fr22,text="Zoom",command=Zoom)

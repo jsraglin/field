@@ -1,6 +1,6 @@
 Project Log
 
-I recently came up with the core idea here, of a 3-dimensional field that appears
+I recently came up with the core idea here, of a 3-dimensional ring that appears
 to be mathematically coherent if not necessarily meaningful.  The idea can either
 be regarded as an extension of Dual numbers or a simplification of Surreal Numbers.
 At present I'm calling it Super Simplified Surreal numbers, which sounds better
@@ -9,11 +9,11 @@ infinitessimal, and infinite component, so is of the form a + b epsilon + c omeg
 I declare that, as in the dual numbers, epsilon * epsilon is 0.  I also simplify
 the other parts of the multiplication table rather than doing the rigorous
 expansions of the surreal numbers: epsilon * omega = 1, as is omega * epsilon,
-and omega * omega = omega. (Note: This field is not associative under
+and omega * omega = omega. (Note: These triels are not associative under
 multiplcation.  epsilon * omega * omega is either 1 or omega depending on the order
 of the operations)
 
-Having defined a 3-part field, my next idea was to see if, when applied to the
+Having defined a 3-part ring, my next idea was to see if, when applied to the
 mandelbrot algorithm, it yielded a 3-dimensional fractal surface. The initial
 experiments here proved that yes, it does, but in an interesting way.  There are
 regions of the defined space that show mandelbrot-like fractal features, others
@@ -69,3 +69,13 @@ X frames, the Y-frame view is flipped horizontally, and the Z-frame view
 is flipped vertically.  So I should probably flip those in render
 and work on the zoom from there, so I'm generating actual 
 axial/coronal/sagittal planes.
+
+The first round or two of viewing in 3dSlicer has revealed the fractals
+to not be nearly as 3-dimnesional as I had wanted, so I'm expanding the
+project to other rings, starting with a 3 part braid (i*i)=-j, (j*j)=-k, k*k=-i,
+ij=k,jk=i,ki=j. Disappointingly smooth, and somehow the zoom is off again?
+
+Next big project is to paramaterize the ring type and fractal equations, and
+then to add a starting popup to select them.
+The z2 braid is interesting, a sort of dart shape with some fractal-ness.
+Looks chaotic at the big scale.

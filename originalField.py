@@ -6,20 +6,20 @@ import _tkinter
 from PIL import Image
 
 
-class field:
+class triel:
     def __init__ (self,finite, infinitessimal, infinite):
         self.r=finite
         self.p=infinitessimal
         self.m=infinite
 
     def __add__ (self,o):
-        return field(self.r+o.r, self.p+o.p, self.m+o.m)
+        return triel(self.r+o.r, self.p+o.p, self.m+o.m)
     
     def __mul__ (self,o):
         re=(self.r*o.r)+(self.p*o.m)+(self.m*o.p)
         ep=(self.r*o.p)+(self.p*o.r)
         om=(self.m*o.r)+(self.m*o.m)+(self.r*o.m)
-        return field(re,ep,om)
+        return triel(re,ep,om)
     
     def __repr__ (self):
         return(str(self.r)+" "+str(self.p)+"p "+str(self.m)+"m")
@@ -32,8 +32,8 @@ class field:
 imagesize=100
 shape=numpy.zeros((imagesize,imagesize,imagesize,3),dtype=numpy.uint8)
 appMap=dict()
-#z=field(0.1,0.2,0.3)
-#c=field(-0.2,-0.375,0.11)
+#z=triel(0.1,0.2,0.3)
+#c=triel(-0.2,-0.375,0.11)
 count=0
 xmin=-1.5
 xmax=1.5
@@ -57,8 +57,8 @@ for xpix in range(imagesize):
         y=ymin+ypix*(ymax-ymin)/imagesize
         for zpix in range(imagesize):
             z=zmin+zpix*(zmax-zmin)/imagesize
-            c=field(x,y,z)
-            zz=field(0,0,0)
+            c=triel(x,y,z)
+            zz=triel(0,0,0)
             count=0
             while (count<50) and (zz.magsq()<10000):
                 zz=(zz*zz)+c
@@ -174,8 +174,8 @@ app.mainloop()
 #    while (y<ymax):
 #        z=zmin
 #        while (z<zmax):
-#            c=field(x,y,z)
-#            zz=field(0,0,0)
+#            c=triel(x,y,z)
+#            zz=triel(0,0,0)
 #            count=0
 #            while (count<100) and (zz.mag()<100):
 #                zz=zz*zz+c
