@@ -3,7 +3,7 @@ import numpy
 from PIL import Image
 import os
 import numba
-from field import field
+from ring import triel
 
 class fractal:
     @numba.jit
@@ -20,8 +20,8 @@ class fractal:
                 y=ymin+ypix*(ymax-ymin)/imagesize
                 for zpix in range(imagesize):
                     z=zmin+zpix*(zmax-zmin)/imagesize
-                    c=field(x,y,z)
-                    zz=field(0,0,0)
+                    c=triel(x,y,z)
+                    zz=triel(0,0,0)
                     count=0
                     while (count<50) and (zz.magsq()<10000):
                         zz=(zz*zz)+c
