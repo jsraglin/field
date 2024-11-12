@@ -2,12 +2,13 @@
 # Imports                                                            #
 ######################################################################
 import math
+import colorsys
 import numpy
 import os
 from tkinter import *
 import _tkinter
 from PIL import ImageTk, Image
-from ring import triel, atriel, braid, abraid, chaos, cbraid, dbraid, anarch, zbraid, flatq, bulb3
+from ring import triel, atriel, braid, abraid, chaos, cbraid, dbraid, anarch, zbraid, flatq, bulb3, cbulb3
 import multiprocessing
 from functools import partial
 import shutil
@@ -58,6 +59,9 @@ class fractal:
                         case "bulb3":
                             c=bulb3(jx,jy,jz)
                             zz=bulb3(x,y,z)
+                        case "cbulb3":
+                            c=cbulb3(jx,jy,jz)
+                            zz=cbulb3(x,y,z)
                         case _:
                             c=triel(jx,jy,jz)
                             zz=triel(x,y,z)
@@ -96,6 +100,9 @@ class fractal:
                         case "bulb3":
                             c=bulb3(x,y,z)
                             zz=bulb3(0,0,0)
+                        case "cbulb3":
+                            c=cbulb3(x,y,z)
+                            zz=cbulb3(0,0,0)
                         case _:
                             c=triel(x,y,z)
                             zz=triel(0,0,0)
@@ -109,7 +116,7 @@ class fractal:
                         iterate=lambda z,c:(z*z)*z+c
                     case _:
                         iterate=lambda z,c:z*z+c
-                while (count<100) and (zz.magsq()<5000):
+                while (count<255) and (zz.magsq()<5000):
                     zz=iterate(zz,c)
 #                    zz=(zz*zz)+c
                     count=count+1
@@ -117,10 +124,9 @@ class fractal:
 #                        print(zz)
 #                if ypix==100 and zpix==100:
 #                    print(count)
-                if count<100:
-                    plane[ypix][zpix][0]=colormap[count][0]
-                    plane[ypix][zpix][1]=colormap[count][1]
-                    plane[ypix][zpix][2]=colormap[count][2]
+                plane[ypix][zpix][0]=colormap[count][0]
+                plane[ypix][zpix][1]=colormap[count][1]
+                plane[ypix][zpix][2]=colormap[count][2]
         return plane
 
     def calcFractal(self, xmin, xmax, ymin, ymax, zmin, zmax, imagesize, colormap, ringtype, itertype):
@@ -151,9 +157,13 @@ class fractal:
         self.jy=jy
         self.jz=jz
         for c in range(256):
-            self.colormap[c][0]=c*7%255
-            self.colormap[c][1]=c*26%255
-            self.colormap[c][2]=c*16%255
+            h=(math.sin(4.0*c/255.0*math.pi))
+            s=(math.sin(1.5*c/255.0*math.pi/2.0))
+            v=(math.cos(1.0*c/255.0*math.pi/2.0))
+            rgb=colorsys.hsv_to_rgb(h,s,v)
+            self.colormap[c][0]=int(abs(rgb[0]*255))%255
+            self.colormap[c][1]=int(abs(rgb[1]*255))%255
+            self.colormap[c][2]=int(abs(rgb[2]*255))%255
         self.shape=self.calcFractal(xmin, xmax, ymin, ymax, zmin, zmax, imagesize, self.colormap, ringtype, itertype)
 
 
@@ -242,7 +252,7 @@ class Fractalapp:
         iterOptions= [
             "z*z",
             "z*(z*z)",
-            "(z*z)*x"
+            "(z*z)*z"
         ]
         ringOptions= [
             "triel",
@@ -255,7 +265,8 @@ class Fractalapp:
             "anarch",
             "zbraid",
             "flatq",
-            "bulb3"
+            "bulb3",
+            "cbulb3"
         ]
         iterDrop=OptionMenu(setupWindow,self.itertype,*iterOptions)
         iterDrop.pack()
@@ -310,14 +321,14 @@ class Fractalapp:
                 box_zmax=((self.centerz+self.radius)-self.zmin)/(self.zmax-self.zmin)*(imagesize+1)
                 print((box_xmin,box_xmax,box_ymin,box_ymax,box_zmin,box_zmax))
                 print((self.xfr, self.yfr, self.zfr))
-                if (self.xfr>=box_xmin) and (self.xfr<=box_xmax):
+                if (self.xfr>=imagesize-box_xmax) and (self.xfr<=imagesize-box_xmin):
 #                    print("x visible")
                     print((box_xmin,box_xmax,box_ymin,box_ymax,box_zmin,box_zmax))
                     print(self.xfr, int(box_xmin+(box_xmax-box_xmin)/2))
-                    if int(self.xfr)==int(box_xmin+(box_xmax-box_xmin)/2):
-                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="red",width=1)    
+                    if int(imagesize-self.xfr)==int(box_xmin+(box_xmax-box_xmin)/2):
+                        cx.create_rectangle(box_ymin,box_zmin,box_ymax,box_zmax,outline="red",width=1)    
                     else:
-                        cx.create_rectangle(imagesize-box_ymax,imagesize-box_zmax,imagesize-box_ymin,imagesize-box_zmin,outline="white",width=1)    
+                        cx.create_rectangle(box_ymin,box_zmin,box_ymax,box_zmax,outline="white",width=1)    
                 if (self.yfr>=box_ymin) and (self.yfr<=box_ymax):
                     print("y visible")
                     if int(self.yfr)==int(box_ymin+(box_ymax-box_ymin)/2):
@@ -389,9 +400,9 @@ class Fractalapp:
 #            print(self.radius)
 
         def get_positionX(event):
-            clickx=self.xfr
-            clicky=imagesize-event.x
-            clickz=imagesize-event.y
+            clickx=imagesize-self.xfr
+            clicky=event.x
+            clickz=event.y
             self.xcl=self.xmin+clickx*(self.xmax-self.xmin)/(imagesize-1)
             self.ycl=self.ymin+clicky*(self.ymax-self.ymin)/(imagesize-1)
             self.zcl=self.zmin+clickz*(self.zmax-self.zmin)/(imagesize-1)
