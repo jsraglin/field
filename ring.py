@@ -208,3 +208,20 @@ class bulb3(ring):
         ep=-1*(self.p*self.p*self.p)+3*self.p*self.r*self.r-self.p*self.m*self.m
         om=self.m*self.m*self.m-3*self.m*self.r*self.r+self.m*self.p*self.p
         return bulb3(re,ep,om)
+
+class cbulb3(ring):
+# Mandelbulb variation class, still assuming self and o identical
+# self and o are identical, which they will be in z*z at least.
+# may behave wonkily in the other itertypes]#
+# first go: sines in some places
+    def __init__ (self, finite, infinitessimal, infinite):
+        super().__init__(finite,infinitessimal,infinite)
+
+    def __add__ (self,o):
+        return cbulb3(self.r+o.r, self.p+o.p, self.m+o.m)
+
+    def __mul__ (self,o):
+        re=self.r*self.r*self.r-3*self.r*(math.sin(self.r)*math.pi)*(self.p*self.p+self.m*self.m)
+        ep=-1*(self.p*self.p*self.p)+3*self.p*(math.cos(self.p)*math.pi)*(self.r*self.r-self.m*self.m)
+        om=self.m*self.m*self.m-3*self.m*(math.sin(self.m)*math.pi)*(self.r*self.r+self.p*self.p)
+        return cbulb3(re,ep,om)
